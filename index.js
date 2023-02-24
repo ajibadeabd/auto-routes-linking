@@ -44,9 +44,26 @@ console.log("------------------------------------------------")
       let route = file.split(".")[0]
       .replace("index","")
       .replace(/\s+/g, '');
-      for (let rout in eachFile) {
-         console.log(`|${apiPrefix}${prefix}/${route}`, rout +  "request")
-        app[rout](`/${apiPrefix}${prefix}/${route}`, eachFile[rout]);
+      for (const  eachRoute in eachFile["route"]) {
+       let  [ eachRouteMethod , sur ] = eachRoute.split(".")
+         let apiRoute  = `/${apiPrefix}${prefix}/${route}` 
+         if (sur) {
+          sur =sur.replace(":","/:")
+          apiRoute+=sur
+        }
+         console.log(apiRoute, eachRouteMethod + " "+ "request")
+       let middleWare =  [apiRoute]
+       let overallMiddleware = eachFile['middleware']["all"]
+       if(eachRoute in eachFile['middleware']){
+        middleWare.push(eachFile['middleware'][eachRoute])
+       }
+       if( overallMiddleware && overallMiddleware.length>0){
+        middleWare.push(...overallMiddleware)
+       }
+      app[ eachRouteMethod ](...middleWare,eachFile["route"][eachRoute])
+
+       
+       
 console.log("------------------------------------------------")
       }
     }  
