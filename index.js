@@ -54,12 +54,13 @@ console.log("------------------------------------------------")
          console.log(apiRoute, eachRouteMethod + " "+ "request")
        let middleWare =  [apiRoute]
        let overallMiddleware = eachFile['middleware']["all"]
-       if(eachRoute in eachFile['middleware']){
-        middleWare.push(eachFile['middleware'][eachRoute])
-       }
        if( overallMiddleware && overallMiddleware.length>0){
         middleWare.push(...overallMiddleware)
        }
+       if(eachRoute in eachFile['middleware']){
+        middleWare.push(eachFile['middleware'][eachRoute])
+       }
+       
       app[ eachRouteMethod ](...middleWare,eachFile["route"][eachRoute])
 
        
