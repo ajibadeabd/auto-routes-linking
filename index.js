@@ -8,12 +8,18 @@ class AutoRoute {
     this.dirname = process.cwd() + "/";
     this.debug = true;
     this.apiPrefix = "api";
+    this.packages = {}
     this.newInstance = this.newInstance ? this.newInstance : new this();
     return this;
   };
 
   static setDebugger = (debug) => {
     this.debug = debug;
+    return this;
+  };
+
+  static setPackages = (newPackage) => {
+    this.packages = {...this.packages,...newPackage}
     return this;
   };
 
@@ -53,11 +59,13 @@ class AutoRoute {
         if (fs.statSync(filePath).isDirectory()) {
           return createRoute(filePath, prefix + "/" + file.replace("]", "").replace("[", ":"));
         } else if (this.validateFile(file)) {
-          const eachFile = require(filePath);
+          const eachFile = require(filePath)
           let route = file.split(".")[0]
             .replace("index", "")
             .replace(/\s+/g, "");
-          for (const eachRoute in eachFile["route"]) {
+            // console.log(new eachFile["route"](this.app))
+            const routeClass = new eachFile["route"](this.packages)
+          for (const eachRoute in routeClass) {
             let [eachRouteMethod, sur] = eachRoute.split(".");
             let apiRoute = `/${this.apiPrefix}${prefix}/${route}`;
             if (sur) {
@@ -68,20 +76,22 @@ class AutoRoute {
               console.log(apiRoute, eachRouteMethod + " request");
             }
             let middleWare = [apiRoute];
-            let overallMiddleware = eachFile['middleware']["all"];
+            const classMiddleware = new eachFile['middleware'](this.packages)
+            let overallMiddleware = classMiddleware["all"]();
             if (overallMiddleware && overallMiddleware.length > 0) {
               middleWare.push(...overallMiddleware);
             }
-            if (eachRoute in eachFile['middleware']) {
-              middleWare.push(eachFile['middleware'][eachRoute]);
+            if (classMiddleware[eachRoute]) {
+              middleWare.push(...classMiddleware[eachRoute]());
             }
-            this.app[eachRouteMethod](...middleWare, eachFile["route"][eachRoute]);
+            this.app[eachRouteMethod](...middleWare, routeClass[eachRoute]);
             if (this.debug) {
               console.log("------------------------------------------------");
             }
           }
         }
       });
+      return this
     };
     return createRoute(this.dirname + this.routePath, "");
   };
