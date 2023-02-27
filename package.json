@@ -6,5 +6,9 @@
   },
   "author": "ajibadeabd",
   "license": "MIT",
-  "description": ""
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajibadeabd/auto-routes-linking.git"
+  }
 }
